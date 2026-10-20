@@ -15,9 +15,12 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run OpenClaw Gateway
+      - name: Configure and Run OpenClaw
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          OPENCLAW_TELEGRAM_ALLOWED_USERS: "7043094764"
         run: |
+          # Configurar la lista de usuarios autorizados vía CLI
+          npx openclaw config set channels.telegram.allowUsers '["7043094764"]' || true
+          
+          # Iniciar el Gateway
           npx openclaw gateway --allow-unconfigured
