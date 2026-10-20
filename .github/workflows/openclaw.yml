@@ -15,26 +15,18 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run OpenClaw with Pre-configured Auth
+      - name: Run OpenClaw
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          # Crear el directorio de configuración y precargar el usuario autorizado
           mkdir -p ~/.openclaw
           cat << 'JSON' > ~/.openclaw/openclaw.json
           {
             "gateway": {
               "mode": "local"
-            },
-            "channels": {
-              "telegram": {
-                "enabled": true,
-                "token": "${{ secrets.TELEGRAM_BOT_TOKEN }}",
-                "allowUsers": ["7043094764"]
-              }
             }
           }
           JSON
 
-          # Iniciar el Gateway con la configuración precargada
+          # Iniciar dejando que el token actúe por variable de entorno y usar allow-unconfigured
           npx openclaw gateway --allow-unconfigured
