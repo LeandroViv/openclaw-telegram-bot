@@ -15,12 +15,24 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Configure and Run OpenClaw
+      - name: Setup Auth and Run OpenClaw
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          # Configurar la lista de usuarios autorizados vía CLI
-          npx openclaw config set channels.telegram.allowUsers '["7043094764"]' || true
-          
-          # Iniciar el Gateway
-          npx openclaw gateway --allow-unconfigured
+          # Crear estructura y forzar el archivo de configuración con el canal de telegram y tu ID autorizado
+          mkdir -p ~/.openclaw
+          cat << 'JSON' > ~/.openclaw/config.json
+          {
+            "channels": {
+              "telegram": {
+                "enabled": true,
+                "token": "${{ secrets.TELEGRAM_BOT_TOKEN }}",
+                "adminUsers": ["7043094764"],
+                "allowUsers": ["7043094764"]
+              }
+            }
+          }
+          JSON
+
+          # Iniciar OpenClaw leyendo esa configuración
+          npx openclaw gateway
