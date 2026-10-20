@@ -2,11 +2,6 @@ name: OpenClaw Telegram Bot
 
 on:
   workflow_dispatch:
-    inputs:
-      command:
-        description: 'Comando a ejecutar en el runner activo'
-        required: false
-        default: ''
 
 jobs:
   run-openclaw:
@@ -20,12 +15,26 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run OpenClaw or Command
+      - name: Run OpenClaw with Pre-configured Auth
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          if [ -n "${{ github.event.inputs.command }}" ]; then
-            npx ${{ github.event.inputs.command }}
-          else
-            npx openclaw gateway --allow-unconfigured
-          fi
+          # Crear el directorio de configuración y precargar el usuario autorizado
+          mkdir -p ~/.openclaw
+          cat << 'JSON' > ~/.openclaw/openclaw.json
+          {
+            "gateway": {
+              "mode": "local"
+            },
+            "channels": {
+              "telegram": {
+                "enabled": true,
+                "token": "${{ secrets.TELEGRAM_BOT_TOKEN }}",
+                "allowUsers": ["7043094764"]
+              }
+            }
+          }
+          JSON
+
+          # Iniciar el Gateway con la configuración precargada
+          npx openclaw gateway --allow-unconfigured
