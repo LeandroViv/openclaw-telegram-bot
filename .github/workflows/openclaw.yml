@@ -2,6 +2,11 @@ name: OpenClaw Telegram Bot
 
 on:
   workflow_dispatch:
+    inputs:
+      command:
+        description: 'Comando a ejecutar en el runner activo'
+        required: false
+        default: ''
 
 jobs:
   run-openclaw:
@@ -15,24 +20,12 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run OpenClaw with Full Log Interceptor
+      - name: Run OpenClaw or Command
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          rm -f /tmp/openclaw_fifo
-          mkfifo /tmp/openclaw_fifo
-
-          # Monitorear stdout y stderr en tiempo real
-          cat /tmp/openclaw_fifo | while read -r line; do
-            echo "$line"
-            if echo "$line" | grep -qi "pairing approve"; then
-              CODE=$(echo "$line" | grep -oE '[A-Z0-9]{8}' | tail -n 1)
-              if [ -n "$CODE" ]; then
-                echo ">>> CÓDIGO DETECTADO EN LOGS: $CODE. EJECUTANDO APROBACIÓN... <<<"
-                npx openclaw pairing approve telegram "$CODE" || true
-              fi
-            fi
-          done &
-
-          # Iniciar gateway redirigiendo stdout Y stderr al FIFO
-          npx openclaw gateway --allow-unconfigured > /tmp/openclaw_fifo 2>&1
+          if [ -n "${{ github.event.inputs.command }}" ]; then
+            npx ${{ github.event.inputs.command }}
+          else
+            npx openclaw gateway --allow-unconfigured
+          fi
