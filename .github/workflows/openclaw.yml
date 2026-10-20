@@ -19,4 +19,4 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          npx openclaw gateway
+          npx openclaw gateway --allow-unconfigured
