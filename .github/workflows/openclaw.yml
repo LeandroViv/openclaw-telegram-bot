@@ -1,50 +1,29 @@
-name: OpenClaw Gateway Bot
+name: OpenClaw Telegram Bot
 
 on:
-  workflow_dispatch: # Permite lanzarlo manualmente desde la terminal con `gh`
-  schedule:
-    - cron: '0 */6 * * *' # Opcional: para que se reinicie automáticamente cada 6 horas
+  workflow_dispatch:
 
 jobs:
-  run-bot:
+  run-openclaw:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '20'
 
-      - name: Install OpenClaw globally
+      - name: Install OpenClaw
         run: npm install -g openclaw
 
-      - name: Configure OpenClaw environment
+      - name: Run OpenClaw paired approval and start gateway
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          mkdir -p ~/.openclaw
-          cat << 'EOF_CONF' > ~/.openclaw/openclaw.json
-          {
-            "wizard": {
-              "securityAcknowledgedAt": "2026-10-19T23:38:19.360Z",
-              "accessMode": "full"
-            },
-            "gateway": {
-              "mode": "local",
-              "bind": "loopback",
-              "port": 18789
-            },
-            "channels": {
-              "telegram": {
-                "enabled": true,
-                "botToken": "${{ secrets.TELEGRAM_BOT_TOKEN }}"
-              }
-            }
-          }
-          EOF_CONF
-
-      - name: Run OpenClaw Gateway
-        run: openclaw gateway run
-        timeout-minutes: 350 # GitHub Actions corta a las 6 horas (360 min) por job
+          # Intentar aprobar el código de emparejamiento previo si está activo
+          openclaw pairing approve telegram NGXMEVQH || true
+          
+          # Iniciar el Gateway de OpenClaw permitiendo tu usuario
+          openclaw gateway --allow-user 7043094764
