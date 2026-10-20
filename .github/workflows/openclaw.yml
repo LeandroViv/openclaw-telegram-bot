@@ -13,14 +13,11 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Install and Run OpenClaw
+      - name: Run OpenClaw
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          npm install -g openclaw
-          export PATH="$(npm config get prefix)/bin:$PATH"
-          
-          openclaw pairing approve telegram NGXMEVQH || true
-          openclaw gateway --allow-user 7043094764
+          npx openclaw pairing approve telegram NGXMEVQH || true
+          npx openclaw gateway --allow-user 7043094764
