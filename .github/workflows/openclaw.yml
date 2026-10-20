@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       command:
-        description: 'Comando opcional a ejecutar (ej: openclaw pairing approve telegram CODIGO)'
+        description: 'Comando opcional a ejecutar'
         required: false
         default: ''
 
@@ -20,14 +20,14 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Pre-configure OpenClaw Permissions
+      - name: Pre-configure OpenClaw Auth
         run: |
           mkdir -p ~/.openclaw
           cat << 'JSON' > ~/.openclaw/openclaw.json
           {
             "channels": {
               "telegram": {
-                "allowedUsers": ["7043094764"]
+                "users": ["7043094764"]
               }
             }
           }
