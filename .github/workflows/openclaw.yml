@@ -19,20 +19,14 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          # Crear estructura y forzar el archivo de configuración con el canal de telegram y tu ID autorizado
           mkdir -p ~/.openclaw
-          cat << 'JSON' > ~/.openclaw/config.json
+          cat << 'JSON' > ~/.openclaw/openclaw.json
           {
-            "channels": {
-              "telegram": {
-                "enabled": true,
-                "token": "${{ secrets.TELEGRAM_BOT_TOKEN }}",
-                "adminUsers": ["7043094764"],
-                "allowUsers": ["7043094764"]
-              }
+            "gateway": {
+              "mode": "local"
             }
           }
           JSON
+          cp ~/.openclaw/openclaw.json ~/.openclaw/config.json
 
-          # Iniciar OpenClaw leyendo esa configuración
-          npx openclaw gateway
+          npx openclaw gateway --allow-unconfigured
