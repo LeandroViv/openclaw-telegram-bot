@@ -1,0 +1,50 @@
+name: OpenClaw Gateway Bot
+
+on:
+  workflow_dispatch: # Permite lanzarlo manualmente desde la terminal con `gh`
+  schedule:
+    - cron: '0 */6 * * *' # Opcional: para que se reinicie automáticamente cada 6 horas
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install OpenClaw globally
+        run: npm install -g openclaw
+
+      - name: Configure OpenClaw environment
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: |
+          mkdir -p ~/.openclaw
+          cat << 'EOF_CONF' > ~/.openclaw/openclaw.json
+          {
+            "wizard": {
+              "securityAcknowledgedAt": "2026-10-19T23:38:19.360Z",
+              "accessMode": "full"
+            },
+            "gateway": {
+              "mode": "local",
+              "bind": "loopback",
+              "port": 18789
+            },
+            "channels": {
+              "telegram": {
+                "enabled": true,
+                "botToken": "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+              }
+            }
+          }
+          EOF_CONF
+
+      - name: Run OpenClaw Gateway
+        run: openclaw gateway run
+        timeout-minutes: 350 # GitHub Actions corta a las 6 horas (360 min) por job
