@@ -19,4 +19,5 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
+          npx openclaw pairing approve telegram Y5VUGZL6 || true
           npx openclaw gateway --allow-unconfigured
