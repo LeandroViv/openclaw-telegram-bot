@@ -2,11 +2,6 @@ name: OpenClaw Telegram Bot
 
 on:
   workflow_dispatch:
-    inputs:
-      command:
-        description: 'Comando a ejecutar en el runner activo'
-        required: false
-        default: ''
 
 jobs:
   run-openclaw:
@@ -20,12 +15,9 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run OpenClaw
+      - name: Run OpenClaw Gateway
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          OPENCLAW_TELEGRAM_ALLOWED_USERS: "7043094764"
         run: |
-          if [ -n "${{ github.event.inputs.command }}" ]; then
-            npx ${{ github.event.inputs.command }}
-          else
-            npx openclaw gateway --allow-unconfigured
-          fi
+          npx openclaw gateway --allow-unconfigured
