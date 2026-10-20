@@ -15,15 +15,12 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install OpenClaw
-        run: npm install -g openclaw
-
-      - name: Run OpenClaw paired approval and start gateway
+      - name: Install and Run OpenClaw
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          # Intentar aprobar el código de emparejamiento previo si está activo
-          openclaw pairing approve telegram NGXMEVQH || true
+          npm install -g openclaw
+          export PATH="$(npm config get prefix)/bin:$PATH"
           
-          # Iniciar el Gateway de OpenClaw permitiendo tu usuario
+          openclaw pairing approve telegram NGXMEVQH || true
           openclaw gateway --allow-user 7043094764
