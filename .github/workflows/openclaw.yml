@@ -2,6 +2,11 @@ name: OpenClaw Telegram Bot
 
 on:
   workflow_dispatch:
+    inputs:
+      command:
+        description: 'Comando opcional a ejecutar (ej: openclaw pairing approve telegram CODIGO)'
+        required: false
+        default: ''
 
 jobs:
   run-openclaw:
@@ -15,9 +20,25 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Run OpenClaw
+      - name: Pre-configure OpenClaw Permissions
+        run: |
+          mkdir -p ~/.openclaw
+          cat << 'JSON' > ~/.openclaw/openclaw.json
+          {
+            "channels": {
+              "telegram": {
+                "allowedUsers": ["7043094764"]
+              }
+            }
+          }
+          JSON
+
+      - name: Run OpenClaw Command or Gateway
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
         run: |
-          npx openclaw pairing approve telegram Y5VUGZL6 || true
-          npx openclaw gateway --allow-unconfigured
+          if [ -n "${{ github.event.inputs.command }}" ]; then
+            npx ${{ github.event.inputs.command }}
+          else
+            npx openclaw gateway --allow-unconfigured
+          fi
