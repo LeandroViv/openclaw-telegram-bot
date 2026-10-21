@@ -1,4 +1,56 @@
-- name: Configurar OpenClaw para Ollama y Telegram
+name: OpenClaw + Ollama Runner
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      command:
+        description: 'Comando de OpenClaw a ejecutar'
+        required: false
+        default: 'gateway --allow-unconfigured'
+      model:
+        description: 'Modelo de Ollama a descargar/usar'
+        required: false
+        default: 'qwen2.5:1.5b'
+
+jobs:
+  openclaw-runner:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar e Iniciar Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          ollama serve &
+          echo "Esperando a que Ollama levante..."
+          sleep 8
+
+      - name: Descargar Modelo de Ollama
+        run: |
+          MODEL_NAME="${{ github.event.inputs.model }}"
+          if [ -z "$MODEL_NAME" ]; then
+            MODEL_NAME="qwen2.5:1.5b"
+          fi
+          echo "Descargando modelo: $MODEL_NAME"
+          ollama pull "$MODEL_NAME"
+
+      - name: Instalar OpenClaw
+        run: |
+          npm install -g openclaw
+
+      - name: Configurar OpenClaw para Ollama y Telegram
         env:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           OLLAMA_MODEL: ${{ github.event.inputs.model }}
@@ -39,3 +91,15 @@
             };
             fs.writeFileSync("/home/runner/.openclaw/openclaw.json", JSON.stringify(config, null, 2));
           '
+
+      - name: Ejecutar Comando OpenClaw
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          OPENCLAW_BYPASS_PAIRING: "true"
+        run: |
+          CMD_NAME="${{ github.event.inputs.command }}"
+          if [ -z "$CMD_NAME" ]; then
+            CMD_NAME="gateway --allow-unconfigured"
+          fi
+          echo "Ejecutando: openclaw $CMD_NAME"
+          openclaw $CMD_NAME
