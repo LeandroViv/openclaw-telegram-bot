@@ -33,11 +33,11 @@ jobs:
       - name: Instalar e Iniciar Ollama
         run: |
           curl -fsSL https://ollama.com/install.sh | sh
-          ollama serve &
+          OLLAMA_NUM_PARALLEL=1 OMP_NUM_THREADS=2 ollama serve &
           echo "Esperando a que Ollama levante..."
           sleep 8
 
-      - name: Descargar Modelo de Ollama
+      - name: Descargar y Precargar Modelo
         run: |
           MODEL_NAME="${{ github.event.inputs.model }}"
           if [ -z "$MODEL_NAME" ]; then
@@ -45,6 +45,8 @@ jobs:
           fi
           echo "Descargando modelo: $MODEL_NAME"
           ollama pull "$MODEL_NAME"
+          echo "Precargando modelo en memoria..."
+          curl -s http://127.0.0.1:11434/api/generate -d "{\"model\": \"$MODEL_NAME\", \"prompt\": \"hi\", \"stream\": false}" > /dev/null
 
       - name: Instalar OpenClaw
         run: |
@@ -60,8 +62,7 @@ jobs:
               gateway: { auth: { mode: "none" } },
               agents: {
                 defaults: {
-                  model: "ollama/" + modelName,
-                  thinking: "off"
+                  model: "ollama/" + modelName
                 }
               },
               models: {
