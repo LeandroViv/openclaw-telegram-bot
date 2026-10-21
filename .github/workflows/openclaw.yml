@@ -67,7 +67,7 @@ jobs:
               agents: {
                 defaults: {
                   model: "ollama/" + modelName,
-                  promptMode: "minimal"
+                  systemPrompt: "Sos un asistente amigable y directo en español. Respondé de forma concisa y natural en texto plano."
                 }
               },
               models: {
