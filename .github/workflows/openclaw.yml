@@ -43,27 +43,27 @@ jobs:
 
       - name: Configurar OpenClaw para Ollama y Telegram
         env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          OLLAMA_MODEL: ${{ github.event.inputs.model }}
         run: |
           mkdir -p ~/.openclaw
-          python3 -c "
-          import json
-          config = {
-            'gateway': {'auth': {'mode': 'none'}},
-            'agents': {'defaults': {'model': 'ollama/${{ github.event.inputs.model }}'}},
-            'models': {'providers': {'ollama': {'baseUrl': 'http://127.0.0.1:11434'}}},
-            'channels': {
-              'telegram': {
-                'enabled': True,
-                'botToken': '${{ secrets.TELEGRAM_BOT_TOKEN }}',
-                'dmPolicy': 'open',
-                'groups': {'*': {'requireMention': False}}
+          node -e '
+            const fs = require("fs");
+            const config = {
+              gateway: { auth: { mode: "none" } },
+              agents: { defaults: { model: "ollama/" + process.env.OLLAMA_MODEL } },
+              models: { providers: { ollama: { baseUrl: "http://127.0.0.1:11434" } } },
+              channels: {
+                telegram: {
+                  enabled: true,
+                  botToken: process.env.BOT_TOKEN,
+                  dmPolicy: "open",
+                  groups: { "*": { requireMention: false } }
+                }
               }
-            }
-          }
-          with open('/home/runner/.openclaw/openclaw.json', 'w') as f:
-              json.dump(config, f, indent=2)
-          "
+            };
+            fs.writeFileSync("/home/runner/.openclaw/openclaw.json", JSON.stringify(config, null, 2));
+          '
 
       - name: Ejecutar Comando OpenClaw
         env:
