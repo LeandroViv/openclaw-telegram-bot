@@ -17,6 +17,10 @@ on:
         required: false
         default: 'qwen2.5:0.5b'
 
+concurrency:
+  group: openclaw-telegram
+  cancel-in-progress: true
+
 jobs:
   openclaw-runner:
     runs-on: ubuntu-latest
@@ -45,7 +49,7 @@ jobs:
           fi
           echo "Descargando modelo: $MODEL_NAME"
           ollama pull "$MODEL_NAME"
-          echo "Precargando modelo en memoria (keep-alive indefinido)..."
+          echo "Precargando modelo en memoria..."
           curl -s http://127.0.0.1:11434/api/generate -d "{\"model\": \"$MODEL_NAME\", \"prompt\": \"hi\", \"keep_alive\": -1, \"stream\": false}" > /dev/null
 
       - name: Instalar OpenClaw
@@ -62,7 +66,9 @@ jobs:
               gateway: { auth: { mode: "none" } },
               agents: {
                 defaults: {
-                  model: "ollama/" + modelName
+                  model: "ollama/" + modelName,
+                  tools: { enabled: false },
+                  contextWindow: 1024
                 }
               },
               models: {
