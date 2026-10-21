@@ -98,6 +98,15 @@ jobs:
           BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           OLLAMA_MODEL: ${{ github.event.inputs.model }}
 
+      - name: Sobrescribir System Prompt
+        run: |
+          rm -rf ~/.openclaw/prompts ~/.openclaw/workspace/prompts
+          mkdir -p ~/.openclaw/prompts
+          cat << 'EOF' > ~/.openclaw/prompts/default.txt
+          Sos un asistente conversacional útil, directo y amigable en español. 
+          Respondé a las preguntas del usuario de forma clara y directa en texto plano, sin mencionar herramientas, comandos ni limitaciones del sistema a menos que te lo pregunten explícitamente.
+          EOF
+
       - name: Ejecutar Comando OpenClaw
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
