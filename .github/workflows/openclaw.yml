@@ -51,9 +51,6 @@ jobs:
           npm install -g openclaw
 
       - name: Configurar OpenClaw para Ollama y Telegram
-        env:
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          OLLAMA_MODEL: ${{ github.event.inputs.model }}
         run: |
           mkdir -p ~/.openclaw
           node -e '
@@ -63,7 +60,8 @@ jobs:
               gateway: { auth: { mode: "none" } },
               agents: {
                 defaults: {
-                  model: "ollama/" + modelName
+                  model: "ollama/" + modelName,
+                  thinking: "off"
                 }
               },
               models: {
@@ -91,6 +89,9 @@ jobs:
             };
             fs.writeFileSync("/home/runner/.openclaw/openclaw.json", JSON.stringify(config, null, 2));
           '
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          OLLAMA_MODEL: ${{ github.event.inputs.model }}
 
       - name: Ejecutar Comando OpenClaw
         env:
