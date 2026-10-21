@@ -62,8 +62,7 @@ jobs:
               gateway: { auth: { mode: "none" } },
               agents: {
                 defaults: {
-                  model: "ollama/" + modelName,
-                  systemPrompt: "Sos un asistente en español conciso, directo y útil. Responde siempre en texto plano sin devolver JSON ni metadatos."
+                  model: "ollama/" + modelName
                 }
               },
               models: {
