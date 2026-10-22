@@ -58,7 +58,12 @@ jobs:
 
       - name: Configurar OpenClaw para Ollama y Telegram
         run: |
-          mkdir -p ~/.openclaw
+          mkdir -p ~/.openclaw ~/.openclaw/workspace
+
+          cat << 'EOF' > ~/.openclaw/workspace/system.md
+          Sos un asistente amigable y directo en español. Respondé de forma concisa y natural en texto plano.
+          EOF
+
           node -e '
             const fs = require("fs");
             const modelName = process.env.OLLAMA_MODEL || "qwen2.5:0.5b";
@@ -66,8 +71,7 @@ jobs:
               gateway: { auth: { mode: "none" } },
               agents: {
                 defaults: {
-                  model: "ollama/" + modelName,
-                  systemPrompt: "Sos un asistente amigable y directo en español. Respondé de forma concisa y natural en texto plano."
+                  model: "ollama/" + modelName
                 }
               },
               models: {
